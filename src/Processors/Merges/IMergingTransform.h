@@ -67,17 +67,13 @@ private:
 };
 
 /// Base class for merging transforms.
-template <typename Algorithm>
-class IMergingTransform2 : public IProcessor
+class IMergingTransformBase : public IProcessor
 {
 public:
-    IMergingTransform2(
-            Algorithm algorithm_,
+    IMergingTransformBase(
             size_t num_inputs,
             const Block & input_header,
             const Block & output_header,
-            //size_t max_block_size,
-            //bool use_average_block_size,  /// For adaptive granularity. Return chunks with the same avg size as inputs.
             bool have_all_inputs_);
 
     /// Methods to add additional input port. It is possible to do only before the first call of `prepare`.
@@ -86,20 +82,15 @@ public:
     void setHaveAllInputs();
 
     Status prepare() override;
-    void work() override;
 
 protected:
     virtual void onNewInput(); /// Is called when new input is added. Only if have_all_inputs = false.
     virtual void onFinish() {} /// Is called when all data is processed.
 
-    /// Profile info.
-    Stopwatch total_stopwatch {CLOCK_MONOTONIC_COARSE};
-    Algorithm algorithm;
-
-private:
+protected:
     /// Processor state.
     Chunk output_chunk;
-    bool has_output_chunk = false;
+    Chunk input_chunk;
     bool is_finished = false;
     bool is_initialized = false;
     bool need_data = false;
@@ -119,6 +110,55 @@ private:
     Chunks init_chunks;
 
     Status prepareInitializeInputs();
+};
+
+template <typename Algorithm>
+class IMergingTransform2 : private IMergingTransformBase
+{
+public:
+    IMergingTransform2(
+        Algorithm algorithm_,
+        size_t num_inputs,
+        const Block & input_header,
+        const Block & output_header,
+        bool have_all_inputs)
+        : IMergingTransformBase(num_inputs, input_header, output_header, have_all_inputs)
+        , Algorithm(std::move(algorithm_))
+    {
+    }
+
+    void work() override
+    {
+        if (!init_chunks.empty())
+            algorithm.initialize(std::move(init_chunks));
+
+        if (input_chunk)
+            algorithm.consume(std::move(input_chunk), next_input_to_read);
+
+        IMergingAlgorithm::Status status = algorithm.merge();
+
+        if (status.chunk && status.chunk.hasRows())
+            output_chunk = std::move(status.chunk);
+
+        if (status.required_source >= 0)
+            next_input_to_read = status.required_source;
+
+        if (status.is_finished)
+            is_finished = true;
+    }
+
+    using IMergingTransformBase::addInput;
+    using IMergingTransformBase::prepare;
+    using IMergingTransformBase::setHaveAllInputs;
+
+protected:
+    using IMergingTransformBase::onNewInput;
+    using IMergingTransformBase::onFinish;
+
+    Algorithm algorithm;
+
+    /// Profile info.
+    Stopwatch total_stopwatch {CLOCK_MONOTONIC_COARSE};
 };
 
 }
