@@ -123,7 +123,7 @@ public:
         const Block & output_header,
         bool have_all_inputs_)
         : IMergingTransformBase(num_inputs, input_header, output_header, have_all_inputs_)
-        , Algorithm(std::move(algorithm_))
+        , algorithm(std::move(algorithm_))
     {
     }
 
