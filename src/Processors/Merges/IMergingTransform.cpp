@@ -203,13 +203,13 @@ IProcessor::Status IMergingTransform::prepare()
 
 template <typename Algorithm>
 IMergingTransform2<Algorithm>::IMergingTransform2(
-        Algorithm algorithm,
+        Algorithm algorithm_,
         size_t num_inputs,
         const Block & input_header,
         const Block & output_header,
         bool have_all_inputs_)
         : IProcessor(InputPorts(num_inputs, input_header), {output_header})
-        , algorithm(std::move(algorithm))
+        , algorithm(std::move(algorithm_))
         , have_all_inputs(have_all_inputs_)
 {
 }

@@ -72,7 +72,7 @@ class IMergingTransform2 : public IProcessor
 {
 public:
     IMergingTransform2(
-            Algorithm algorithm,
+            Algorithm algorithm_,
             size_t num_inputs,
             const Block & input_header,
             const Block & output_header,
