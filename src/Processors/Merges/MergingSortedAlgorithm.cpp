@@ -80,6 +80,11 @@ void MergingSortedAlgorithm::consume(Chunk chunk, size_t source_num)
     prepareChunk(chunk);
     source_chunks[source_num] = std::move(chunk);
     cursors[source_num].reset(source_chunks[source_num].getColumns(), {});
+
+    if (has_collation)
+        queue_with_collation.push(cursors[source_num]);
+    else
+        queue_without_collation.push(cursors[source_num]);
 }
 
 IMergingAlgorithm::Status MergingSortedAlgorithm::merge()
