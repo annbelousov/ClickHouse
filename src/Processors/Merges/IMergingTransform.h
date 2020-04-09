@@ -121,8 +121,8 @@ public:
         size_t num_inputs,
         const Block & input_header,
         const Block & output_header,
-        bool have_all_inputs)
-        : IMergingTransformBase(num_inputs, input_header, output_header, have_all_inputs)
+        bool have_all_inputs_)
+        : IMergingTransformBase(num_inputs, input_header, output_header, have_all_inputs_)
         , Algorithm(std::move(algorithm_))
     {
     }
