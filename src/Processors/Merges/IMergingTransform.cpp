@@ -201,7 +201,7 @@ IProcessor::Status IMergingTransform::prepare()
 }
 
 
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 IMergingTransform2<Algorithm>::IMergingTransform2(
         Algorithm algorithm,
         size_t num_inputs,
@@ -214,13 +214,13 @@ IMergingTransform2<Algorithm>::IMergingTransform2(
 {
 }
 
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 void IMergingTransform2<Algorithm>::onNewInput()
 {
     throw Exception("onNewInput is not implemented for " + getName(), ErrorCodes::NOT_IMPLEMENTED);
 }
 
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 void IMergingTransform2<Algorithm>::addInput()
 {
     if (have_all_inputs)
@@ -230,7 +230,7 @@ void IMergingTransform2<Algorithm>::addInput()
     onNewInput();
 }
 
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 void IMergingTransform2<Algorithm>::setHaveAllInputs()
 {
     if (have_all_inputs)
@@ -239,7 +239,7 @@ void IMergingTransform2<Algorithm>::setHaveAllInputs()
     have_all_inputs = true;
 }
 
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 IProcessor::Status IMergingTransform2<Algorithm>::prepareInitializeInputs()
 {
     /// Add information about inputs.
@@ -296,7 +296,7 @@ IProcessor::Status IMergingTransform2<Algorithm>::prepareInitializeInputs()
     return Status::Ready;
 }
 
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 IProcessor::Status IMergingTransform2<Algorithm>::prepare()
 {
     if (!have_all_inputs)
@@ -377,7 +377,7 @@ IProcessor::Status IMergingTransform2<Algorithm>::prepare()
     return Status::Ready;
 }
 
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 void IMergingTransform2<Algorithm>::work()
 {
     if (!init_chunks.empty())

@@ -67,7 +67,7 @@ private:
 };
 
 /// Base class for merging transforms.
-template <MergingAlgorithm Algorithm>
+template <typename Algorithm>
 class IMergingTransform2 : public IProcessor
 {
 public:

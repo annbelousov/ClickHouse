@@ -27,7 +27,8 @@ public:
     virtual ~IMergingAlgorithm() = default;
 };
 
-template <class T>
-concept MergingAlgorithm = std::is_base_of<IMergingAlgorithm, T>::value && std::is_move_constructible<T>::value;
+// TODO: use when compile with clang which could support it
+// template <class T>
+// concept MergingAlgorithm = std::is_base_of<IMergingAlgorithm, T>::value && std::is_move_constructible<T>::value;
 
 }
