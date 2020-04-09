@@ -71,10 +71,10 @@ class IMergingTransformBase : public IProcessor
 {
 public:
     IMergingTransformBase(
-            size_t num_inputs,
-            const Block & input_header,
-            const Block & output_header,
-            bool have_all_inputs_);
+        size_t num_inputs,
+        const Block & input_header,
+        const Block & output_header,
+        bool have_all_inputs_);
 
     /// Methods to add additional input port. It is possible to do only before the first call of `prepare`.
     void addInput();
@@ -87,17 +87,16 @@ protected:
     virtual void onNewInput(); /// Is called when new input is added. Only if have_all_inputs = false.
     virtual void onFinish() {} /// Is called when all data is processed.
 
-protected:
     /// Processor state.
     Chunk output_chunk;
     Chunk input_chunk;
     bool is_finished = false;
-    bool is_initialized = false;
     bool need_data = false;
     size_t next_input_to_read = 0;
 
-    std::atomic<bool> have_all_inputs;
+    Chunks init_chunks;
 
+private:
     struct InputState
     {
         explicit InputState(InputPort & port_) : port(port_) {}
@@ -107,13 +106,14 @@ protected:
     };
 
     std::vector<InputState> input_states;
-    Chunks init_chunks;
+    std::atomic<bool> have_all_inputs;
+    bool is_initialized = false;
 
-    Status prepareInitializeInputs();
+    IProcessor::Status prepareInitializeInputs();
 };
 
 template <typename Algorithm>
-class IMergingTransform2 : private IMergingTransformBase
+class IMergingTransform2 : public IMergingTransformBase
 {
 public:
     IMergingTransform2(
@@ -141,24 +141,28 @@ public:
             output_chunk = std::move(status.chunk);
 
         if (status.required_source >= 0)
+        {
             next_input_to_read = status.required_source;
+            need_data = true;
+        }
 
         if (status.is_finished)
             is_finished = true;
     }
 
-    using IMergingTransformBase::addInput;
-    using IMergingTransformBase::prepare;
-    using IMergingTransformBase::setHaveAllInputs;
-
 protected:
-    using IMergingTransformBase::onNewInput;
-    using IMergingTransformBase::onFinish;
-
     Algorithm algorithm;
 
     /// Profile info.
     Stopwatch total_stopwatch {CLOCK_MONOTONIC_COARSE};
+
+private:
+    using IMergingTransformBase::output_chunk;
+    using IMergingTransformBase::input_chunk;
+    using IMergingTransformBase::is_finished;
+    using IMergingTransformBase::need_data;
+    using IMergingTransformBase::next_input_to_read;
+    using IMergingTransformBase::init_chunks;
 };
 
 }
